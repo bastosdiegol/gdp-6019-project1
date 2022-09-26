@@ -24,3 +24,6 @@ private:
 	GameObject* m_EnemyTank;
 	GameObject* m_Bullet;
 };
+
+// Utility function for a random range of two floats
+float RandFloat(float min, float max);

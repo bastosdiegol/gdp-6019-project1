@@ -1,5 +1,9 @@
-#include "ArtilleryGame.h"
 #include <iostream>			// cout
+#include <random>
+#include <ctime>
+#include <Windows.h>
+
+#include "ArtilleryGame.h"
 #include "AssetInfo.h"
 
 #define DEBUG_LOG_ENABLED
@@ -57,9 +61,11 @@ void ArtilleryGame::Initialize()
 	m_EnemyTank = CreateGameObjectByType("Enemy");
 	m_Bullet = CreateGameObjectByType("Bullet");
 
-	m_PlayerTank->Position = glm::vec3(-10, 0, -10);
-	m_EnemyTank->Position = glm::vec3(10, 0, 10);
-	m_Bullet->Position = glm::vec3(10, 2, 0);
+	srand(time(0));
+	m_PlayerTank->Position = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
+	m_EnemyTank->Position  = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
+	//m_Bullet->Position     = glm::vec3(10, 2, 0);
+	m_Bullet->Position     = m_PlayerTank->Position;
 }
 
 /// <summary>
@@ -70,6 +76,9 @@ void ArtilleryGame::Destroy()
 {
 	DEBUG_PRINT("ArtilleryGame::Destroy\n");
 	// TODO:
+	delete m_PlayerTank;
+	delete m_EnemyTank;
+	delete m_Bullet;
 }
 
 /// <summary>
@@ -84,6 +93,11 @@ void ArtilleryGame::StartNewGame()
 {
 	DEBUG_PRINT("ArtilleryGame::StartNewGame\n");
 	// TODO:
+	m_PlayerTank->Position = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
+	m_EnemyTank->Position = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
+	m_Bullet->Position = m_PlayerTank->Position;
+	//MessageBox(NULL, (LPCWSTR)L"New Game Begun! Good Luck!", (LPCWSTR)L"New Game", MB_OK | MB_ICONINFORMATION);
+
 }
 
 /// <summary>
@@ -100,8 +114,21 @@ void ArtilleryGame::StartNewGame()
 /// </summary>
 void ArtilleryGame::GameUpdate()
 {
-	// DEBUG_PRINT("ArtilleryGame::GameUpdate\n");
+	DEBUG_PRINT("ArtilleryGame::GameUpdate\n");
+
 	// TODO:
+	// Typically moved to a UserInput Section
+	//if (GDP_IsKeyHeldDown('a'))
+	//	m_PlayerTank.Position->ApplyForce(Vector3(1, 0, 0));
+	//if (GDP_IsKeyHeldDown('d'))
+	//	m_PlayerTank.Position->ApplyForce(Vector3(-1, 0, 0));
+	//if (GDP_IsKeyHeldDown('w'))
+	//	m_PlayerTank.Position->ApplyForce(Vector3(0, 0, 1));
+	//if (GDP_IsKeyHeldDown('s'))
+	//	m_PlayerTank.Position->ApplyForce(Vector3(0, 0, -1));
+	if (GDP_IsKeyPressed('n') || GDP_IsKeyPressed('N'))
+		this->StartNewGame();
+
 }
 
 /// <summary>
@@ -145,4 +172,13 @@ GameObject* ArtilleryGame::CreateGameObjectByType(const std::string& type)
 
 	// Invalid game object type, return nullptr
 	return nullptr;
+}
+
+// Utility function for a random range of two floats
+float RandFloat(float min, float max) {
+	if (max == min)
+		return 0.f;
+
+	int diff = (max - min) * 1000;
+	return min + (rand() % diff) / 1000.0f;
 }
