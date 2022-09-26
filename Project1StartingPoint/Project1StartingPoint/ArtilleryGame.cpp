@@ -126,6 +126,8 @@ void ArtilleryGame::GameUpdate()
 	//	m_PlayerTank.Position->ApplyForce(Vector3(0, 0, 1));
 	//if (GDP_IsKeyHeldDown('s'))
 	//	m_PlayerTank.Position->ApplyForce(Vector3(0, 0, -1));
+	if (GDP_IsKeyPressed('x'))
+		this->FireProjectile();
 	if (GDP_IsKeyPressed('n') || GDP_IsKeyPressed('N'))
 		this->StartNewGame();
 
@@ -172,6 +174,12 @@ GameObject* ArtilleryGame::CreateGameObjectByType(const std::string& type)
 
 	// Invalid game object type, return nullptr
 	return nullptr;
+}
+
+void ArtilleryGame::FireProjectile() {
+	// Undefined Bullet Type Up Vector
+	// For each type of Bullet we are going to define a specific up vector
+	glm::vec3 up(0.0f, 1.0f, 0.0f);
 }
 
 // Utility function for a random range of two floats

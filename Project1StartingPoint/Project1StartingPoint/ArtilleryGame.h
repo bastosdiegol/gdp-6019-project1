@@ -23,6 +23,8 @@ private:
 	GameObject* m_PlayerTank;
 	GameObject* m_EnemyTank;
 	GameObject* m_Bullet;
+
+	void FireProjectile();
 };
 
 // Utility function for a random range of two floats
