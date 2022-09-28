@@ -155,10 +155,12 @@
   <ItemGroup>
     <ClCompile Include="ArtilleryGame.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Particle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArtilleryGame.h" />
     <ClInclude Include="AssetInfo.h" />
+    <ClInclude Include="Particle.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
