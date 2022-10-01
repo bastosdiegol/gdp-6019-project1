@@ -9,14 +9,12 @@
 #endif
 
 // Default Constructor
-Particle::Particle()
-	: position(0.0f)
-	, velocity(0.0f)
-	, acceleration(0.0f)
-	, damping(1.0f)
-	, mass(1.0f)
-	, age(-1.0f)
-{
+Particle::Particle() :	position(0.0f)
+					  , velocity(0.0f)
+					  , acceleration(0.0f)
+					  , damping(1.0f)
+					  , mass(1.0f)
+					  , age(-1.0f){
 	DEBUG_PRINT("Particle::Particle();\n");
 }
 
@@ -40,7 +38,7 @@ Particle::Particle(const Particle& particle) {
 Particle Particle::operator=(const Particle& particle) {
 	DEBUG_PRINT("Particle::operator=();\n");
 
-	return Particle();
+	return Particle(particle);
 }
 
 // Method to print Particle info on the console
@@ -67,6 +65,41 @@ void Particle::Integrate(float dt) {
 	// In case the particle hit the ground
 	// Set age to 0 to kill it
 	if (position.y <= 0.f) {
-		age = 0.f;
+		age = 0.0f;
 	}
+}
+
+// Getters and Setters
+void Particle::setPosition(glm::vec3 position){
+	this->position = position;
+}
+
+void Particle::setVelocity(glm::vec3 velocity){
+	this->velocity = velocity;
+}
+
+void Particle::setAcceleration(glm::vec3 acceleration){
+	this->acceleration = acceleration;
+}
+
+void Particle::setAge(float age){
+	this->age = age;
+}
+
+void Particle::setDamping(float damping){
+	this->damping = damping;
+}
+
+void Particle::setMass(float mass){
+	this->mass = mass;
+}
+
+glm::vec3 Particle::getPosition()
+{
+	return this->position;
+}
+
+float Particle::getAge()
+{
+	return this->age;
 }

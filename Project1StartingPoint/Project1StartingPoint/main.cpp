@@ -1,5 +1,8 @@
 #include <gdp/engine.h>
 #include <vector>
+
+#include "ParticleSystem.h"
+
 using namespace gdp;
 
 #define SUCCESS 0

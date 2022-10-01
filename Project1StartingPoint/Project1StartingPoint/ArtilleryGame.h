@@ -2,6 +2,7 @@
 
 #include <gdp/Engine.h>
 #include <string>
+#include "ParticleSystem.h"
 
 using namespace gdp; 
 
@@ -20,9 +21,12 @@ public:
 private:
 	GameObject* CreateGameObjectByType(const std::string& type);
 
-	GameObject* m_PlayerTank;
-	GameObject* m_EnemyTank;
-	GameObject* m_Bullet;
+	GameObject*					m_PlayerTank;
+	GameObject*					m_EnemyTank;
+	std::vector<GameObject*>	m_Bullet;
+
+	ParticleSystem*				particleSystem;
+	glm::vec3					cannonVec;
 
 	void FireProjectile();
 };

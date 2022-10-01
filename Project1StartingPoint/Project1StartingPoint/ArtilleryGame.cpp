@@ -6,7 +6,7 @@
 #include "ArtilleryGame.h"
 #include "AssetInfo.h"
 
-#define DEBUG_LOG_ENABLED
+//#define DEBUG_LOG_ENABLED
 #ifdef DEBUG_LOG_ENABLED
 #define DEBUG_PRINT(x, ...) printf(x, __VA_ARGS__)
 #else
@@ -22,6 +22,8 @@ unsigned int PlayerMaterialId;
 unsigned int EnemyMaterialId;
 unsigned int BulletMaterialId;
 
+const unsigned int MAX_BULLETS = 10;
+
 // TODO:
 // #include "YourPhysicsClass.h"
 
@@ -32,7 +34,9 @@ unsigned int BulletMaterialId;
 ArtilleryGame::ArtilleryGame()
 	: m_PlayerTank(nullptr)
 	, m_EnemyTank(nullptr)
-	, m_Bullet(nullptr) 
+	, m_Bullet(0) 
+	, particleSystem(nullptr)
+	, cannonVec(glm::vec3(0.0f))
 {
 	DEBUG_PRINT("ArtilleryGame::ArtilleryGame\n");
 	// DO NOTHING!!!!!!!!
@@ -59,13 +63,20 @@ void ArtilleryGame::Initialize()
 	// - Create projectile(s)
 	m_PlayerTank = CreateGameObjectByType("Player");
 	m_EnemyTank = CreateGameObjectByType("Enemy");
-	m_Bullet = CreateGameObjectByType("Bullet");
 
 	srand(time(0));
 	m_PlayerTank->Position = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
 	m_EnemyTank->Position  = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
 	//m_Bullet->Position     = glm::vec3(10, 2, 0);
-	m_Bullet->Position     = m_PlayerTank->Position;
+	//m_Bullet->Position     = m_PlayerTank->Position;
+
+
+	particleSystem = new ParticleSystem(m_PlayerTank->Position, MAX_BULLETS);
+	m_Bullet.resize(MAX_BULLETS);
+	for (int i = 0; i < MAX_BULLETS; i++) {
+		m_Bullet[i] = CreateGameObjectByType("Bullet");
+		m_Bullet[i]->Position = m_PlayerTank->Position;
+	}
 }
 
 /// <summary>
@@ -78,7 +89,10 @@ void ArtilleryGame::Destroy()
 	// TODO:
 	delete m_PlayerTank;
 	delete m_EnemyTank;
-	delete m_Bullet;
+	delete particleSystem;
+	for (int i = 0; i < MAX_BULLETS; i++) {
+		delete m_Bullet[i];
+	}
 }
 
 /// <summary>
@@ -95,7 +109,10 @@ void ArtilleryGame::StartNewGame()
 	// TODO:
 	m_PlayerTank->Position = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
 	m_EnemyTank->Position = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
-	m_Bullet->Position = m_PlayerTank->Position;
+	particleSystem->setPosition(m_PlayerTank->Position);
+	for (int i = 0; i < MAX_BULLETS; i++) {
+		m_Bullet[i]->Position = m_PlayerTank->Position;
+	}
 	//MessageBox(NULL, (LPCWSTR)L"New Game Begun! Good Luck!", (LPCWSTR)L"New Game", MB_OK | MB_ICONINFORMATION);
 
 }
@@ -118,19 +135,24 @@ void ArtilleryGame::GameUpdate()
 
 	// TODO:
 	// Typically moved to a UserInput Section
-	//if (GDP_IsKeyHeldDown('a'))
-	//	m_PlayerTank.Position->ApplyForce(Vector3(1, 0, 0));
-	//if (GDP_IsKeyHeldDown('d'))
-	//	m_PlayerTank.Position->ApplyForce(Vector3(-1, 0, 0));
-	//if (GDP_IsKeyHeldDown('w'))
-	//	m_PlayerTank.Position->ApplyForce(Vector3(0, 0, 1));
-	//if (GDP_IsKeyHeldDown('s'))
-	//	m_PlayerTank.Position->ApplyForce(Vector3(0, 0, -1));
-	if (GDP_IsKeyPressed('x'))
+	if (GDP_IsKeyPressed('a') || GDP_IsKeyPressed('A'))
+		cannonVec += glm::vec3(0.0f, 0.1f, 0.0f);
+	if (GDP_IsKeyPressed('d') || GDP_IsKeyPressed('D'))
+		cannonVec += glm::vec3(0.0f, -0.1f, 0.0f);
+	if (GDP_IsKeyPressed('w') || GDP_IsKeyPressed('W'))
+		cannonVec += glm::vec3(1.0f, 0.0f, 0.0f);
+	if (GDP_IsKeyPressed('s') || GDP_IsKeyPressed('S'))
+		cannonVec += glm::vec3(-1.0f, 0.0f, 0.0f);
+	if (GDP_IsKeyPressed(32))
 		this->FireProjectile();
 	if (GDP_IsKeyPressed('n') || GDP_IsKeyPressed('N'))
 		this->StartNewGame();
 
+	particleSystem->Integrate(0.01f);
+	for (int i = 0; i < particleSystem->getNumParticles(); i++) {
+		Particle* p = particleSystem->getParticle(i);
+		m_Bullet[i]->Position = p->getPosition();
+	}
 }
 
 /// <summary>
@@ -179,7 +201,8 @@ GameObject* ArtilleryGame::CreateGameObjectByType(const std::string& type)
 void ArtilleryGame::FireProjectile() {
 	// Undefined Bullet Type Up Vector
 	// For each type of Bullet we are going to define a specific up vector
-	glm::vec3 up(0.0f, 1.0f, 0.0f);
+	particleSystem->AllocateParticle(MORTAR);
+	
 }
 
 // Utility function for a random range of two floats
