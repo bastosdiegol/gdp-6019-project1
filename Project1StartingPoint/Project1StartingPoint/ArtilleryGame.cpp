@@ -215,10 +215,11 @@ GameObject* ArtilleryGame::CreateGameObjectByType(const std::string& type)
 void ArtilleryGame::FireProjectile() {
 	// Undefined Bullet Type Up Vector
 	// For each type of Bullet we are going to define a specific up vector
-	float defaultAge	 = 15.0f;
+	float defaultAge	 = 5.0f;
 	float defaultDamping =  1.0f;
 	float defaultMass	 =	1.0f;
-
+	// Gravity Acceleration
+	glm::vec3 gravity(0.0f, -9.8f, 0.0f);
 	// Normalizes the aimVector and checks if its 0.0f
 	glm::vec3 aimedUpVector;
 	if (aimVec == glm::vec3(0.0f))
@@ -230,24 +231,24 @@ void ArtilleryGame::FireProjectile() {
 		// Each case will SUM the Munition Type Up Vector with the Normalized vector resulted from Aiming
 		// Then it will allocate a particle passing this new Up Vector modified by the aim, an age, damping and mass
 	case MORTAR:
-		aimedUpVector += glm::vec3(0.0f, 10.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		aimedUpVector += glm::vec3(10.0f, 10.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
 	case ICBM:
-		aimedUpVector += glm::vec3(10.0f, 10.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		aimedUpVector += glm::vec3(20.0f, 20.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
 	case MISSILE:
-		aimedUpVector += glm::vec3(50.0f, 0.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		aimedUpVector += glm::vec3(15.0f, 10.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
 	case LASER:
-		aimedUpVector += glm::vec3(50.0f, 0.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		aimedUpVector += glm::vec3(10.0f, 0.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, glm::vec3(0.0f), defaultAge, defaultDamping, defaultMass);
 		break;
 	case CLUSTER:
-		aimedUpVector += glm::vec3(0.0f, 10.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		aimedUpVector += glm::vec3(10.0f, 10.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
 	}	
 }

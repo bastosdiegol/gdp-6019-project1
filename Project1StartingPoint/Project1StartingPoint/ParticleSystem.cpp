@@ -62,8 +62,8 @@ void ParticleSystem::AllocateParticle(glm::vec3 upVector){
 }
 
 // Method that grabs a dead Particlle from the pool and make it alive
-// accepts Up Vector,  Age, Damping and Mass
-void ParticleSystem::AllocateParticle(glm::vec3 upVector, float age, float damping, float mass){
+// accepts Up Vector, Acceleration, Age, Damping and Mass
+void ParticleSystem::AllocateParticle(glm::vec3 upVector, glm::vec3 acceleration, float age, float damping, float mass){
 	DEBUG_PRINT("ParticleSystem::AllocateParticle(munition type);\n");
 	// Checks if there are particles available
 	if (numParticlesAvail == 0) {
@@ -79,6 +79,7 @@ void ParticleSystem::AllocateParticle(glm::vec3 upVector, float age, float dampi
 
 	// Transform the dead particle into a living one
 	p.setVelocity(upVector);
+	p.setAcceleration(acceleration);
 	p.setAge(age);
 	p.setDamping(damping);
 	p.setMass(mass);

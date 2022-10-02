@@ -11,7 +11,7 @@
 // Default Constructor
 Particle::Particle() :	position(0.0f)
 					  , velocity(0.0f)
-					  , acceleration(-9.8f) // Gravity
+					  , acceleration(0.0f, -9.8f, 0.0f) // Gravity
 					  , damping(1.0f)
 					  , mass(1.0f)
 					  , age(-1.0f){
@@ -63,10 +63,10 @@ void Particle::Integrate(float dt) {
 	age -= dt;
 
 	// In case the particle hit the ground
-	// Set age to 0 to kill it
-	if (position.y <= 0.f) {
-		age = 0.0f;
-	}
+	// Set age to -1 to kill it
+	/*if (position.y <= 0.f) {
+		age = -1.0f;
+	}*/
 }
 
 // Getters and Setters
