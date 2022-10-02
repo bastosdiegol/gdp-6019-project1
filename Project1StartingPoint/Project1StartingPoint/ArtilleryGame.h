@@ -6,6 +6,13 @@
 
 using namespace gdp; 
 
+typedef unsigned int munition;
+#define MORTAR	0
+#define ICBM	1
+#define MISSILE	2
+#define LASER	3
+#define CLUSTER	4
+
 class ArtilleryGame {
 public:
 	ArtilleryGame();
@@ -26,7 +33,8 @@ private:
 	std::vector<GameObject*>	m_Bullet;
 
 	ParticleSystem*				particleSystem;
-	glm::vec3					cannonVec;
+	glm::vec3					aimVec;
+	munition					selectedMuni;
 
 	void FireProjectile();
 };

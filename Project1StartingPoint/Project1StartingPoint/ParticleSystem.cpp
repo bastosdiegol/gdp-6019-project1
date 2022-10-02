@@ -36,8 +36,8 @@ ParticleSystem::~ParticleSystem() {
 }
 
 // Method that grabs a dead Particlle from the pool and make it alive
-// accepts munition type
-void ParticleSystem::AllocateParticle(munition type) {
+// accepts Up Vector
+void ParticleSystem::AllocateParticle(glm::vec3 upVector){
 	DEBUG_PRINT("ParticleSystem::AllocateParticle(munition type);\n");
 	// Checks if there are particles available
 	if (numParticlesAvail == 0) {
@@ -49,38 +49,11 @@ void ParticleSystem::AllocateParticle(munition type) {
 		DEBUG_PRINT("ParticleSystem::AllocateParticle - Error - Oldest particle still alive, can't create a new particle!\n");
 		return;
 	}
-	switch (type) {
-	case MORTAR:
-		p.setVelocity(glm::vec3(0.0f, 1.0f, 0.0f));
-		p.setAge(15.0f);
-		p.setDamping(1.0f);
-		p.setMass(1.0f);
-		break;
-	case INTERCONTINENTAL:
-		p.setVelocity(glm::vec3(10.0f, 10.0f, 0.0f));
-		p.setAge(15.0f);
-		p.setDamping(1.0f);
-		p.setMass(1.0f);
-		break;
-	case MISSILE:
-		p.setVelocity(glm::vec3(50.0f, 0.0f, 0.0f));
-		p.setAge(15.0f);
-		p.setDamping(1.0f);
-		p.setMass(1.0f);
-		break;
-	case LASER:
-		p.setVelocity(glm::vec3(100.0f, 0.0f, 0.0f));
-		p.setAge(15.0f);
-		p.setDamping(0);
-		p.setMass(0);
-		break;
-	case CLUSTER:
-		p.setVelocity(glm::vec3(0.0f, 1.0f, 0.0f));
-		p.setAge(15.0f);
-		p.setDamping(1.0f);
-		p.setMass(1.0f);
-		break;
-	}
+
+	// Transform the dead particle into a living one with static age of 5s
+	p.setVelocity(upVector);
+	p.setAge(5.0f);
+	
 	// Particle allocated, one less particle available
 	this->numParticlesAvail--;
 	// Checks if index is at the end of the vector, if so index = 0, else index++
@@ -88,13 +61,52 @@ void ParticleSystem::AllocateParticle(munition type) {
 	return;
 }
 
+// Method that grabs a dead Particlle from the pool and make it alive
+// accepts Up Vector,  Age, Damping and Mass
+void ParticleSystem::AllocateParticle(glm::vec3 upVector, float age, float damping, float mass){
+	DEBUG_PRINT("ParticleSystem::AllocateParticle(munition type);\n");
+	// Checks if there are particles available
+	if (numParticlesAvail == 0) {
+		DEBUG_PRINT("ParticleSystem::AllocateParticle - Error - All particles are alive, can't create a new particle!\n");
+		return;
+	}
+	// Cheks if particle available at index is alive
+	Particle& p = particles[indexAvailParticle];
+	if (p.getAge() >= 0) {
+		DEBUG_PRINT("ParticleSystem::AllocateParticle - Error - Oldest particle still alive, can't create a new particle!\n");
+		return;
+	}
+
+	// Transform the dead particle into a living one
+	p.setVelocity(upVector);
+	p.setAge(age);
+	p.setDamping(damping);
+	p.setMass(mass);
+
+	// Particle allocated, one less particle available
+	this->numParticlesAvail--;
+	// Checks if index is at the end of the vector, if so index = 0, else index++
+	indexAvailParticle == (numParticles - 1) ? indexAvailParticle = 0 : indexAvailParticle++;
+	return;
+}
+
 void ParticleSystem::Integrate(float dt){
 	for (int i = 0; i < numParticles; i++) {
 		Particle& p = particles[i];
+		// Checks if the position of the particle isn't the ground
+		if (p.getPosition().y < 0.0f) {
+			// Reset the particle if its on the ground
+			p.setAge(-1);
+			p.setPosition(this->position);
+			numParticlesAvail++;
+			DEBUG_PRINT("ParticleSystem::Integrate Particle Reseted\n");
+		}
+		// Checks if the particle is alive
 		if (p.getAge() > 0) {
 			p.Integrate(dt);
 		}
 		else if(p.getAge() < 0 && p.getAge() != -1){
+			// Reset the particle if its dead
 			p.setAge(-1);
 			p.setPosition(this->position);
 			numParticlesAvail++;
@@ -106,6 +118,12 @@ void ParticleSystem::Integrate(float dt){
 // Getters and Setters
 void ParticleSystem::setPosition(glm::vec3 position){
 	this->position = position;
+	// Also set position of all dead particles to the new position
+	for (int i = 0; i < numParticles; i++) {
+		Particle& p = particles[i];
+		if (p.getAge() < 0)
+			p.setPosition(this->position);
+	}
 }
 
 Particle* ParticleSystem::getParticle(unsigned int index)

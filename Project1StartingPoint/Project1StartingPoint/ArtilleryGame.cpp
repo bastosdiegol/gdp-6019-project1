@@ -36,7 +36,8 @@ ArtilleryGame::ArtilleryGame()
 	, m_EnemyTank(nullptr)
 	, m_Bullet(0) 
 	, particleSystem(nullptr)
-	, cannonVec(glm::vec3(0.0f))
+	, aimVec(glm::vec3(0.0f))
+	, selectedMuni(MORTAR)
 {
 	DEBUG_PRINT("ArtilleryGame::ArtilleryGame\n");
 	// DO NOTHING!!!!!!!!
@@ -70,7 +71,8 @@ void ArtilleryGame::Initialize()
 	//m_Bullet->Position     = glm::vec3(10, 2, 0);
 	//m_Bullet->Position     = m_PlayerTank->Position;
 
-
+	// Creating of N bullets to be used
+	// Setting the position of all bullets to the PlayerTank position to let them hidden while not used
 	particleSystem = new ParticleSystem(m_PlayerTank->Position, MAX_BULLETS);
 	m_Bullet.resize(MAX_BULLETS);
 	for (int i = 0; i < MAX_BULLETS; i++) {
@@ -110,9 +112,10 @@ void ArtilleryGame::StartNewGame()
 	m_PlayerTank->Position = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
 	m_EnemyTank->Position = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
 	particleSystem->setPosition(m_PlayerTank->Position);
-	for (int i = 0; i < MAX_BULLETS; i++) {
+	// Setting the position of all bullets to the new PlayerTank position to let them hidden while not used
+	/*for (int i = 0; i < MAX_BULLETS; i++) {
 		m_Bullet[i]->Position = m_PlayerTank->Position;
-	}
+	}*/
 	//MessageBox(NULL, (LPCWSTR)L"New Game Begun! Good Luck!", (LPCWSTR)L"New Game", MB_OK | MB_ICONINFORMATION);
 
 }
@@ -135,20 +138,31 @@ void ArtilleryGame::GameUpdate()
 
 	// TODO:
 	// Typically moved to a UserInput Section
-	if (GDP_IsKeyPressed('a') || GDP_IsKeyPressed('A'))
-		cannonVec += glm::vec3(0.0f, 0.1f, 0.0f);
-	if (GDP_IsKeyPressed('d') || GDP_IsKeyPressed('D'))
-		cannonVec += glm::vec3(0.0f, -0.1f, 0.0f);
-	if (GDP_IsKeyPressed('w') || GDP_IsKeyPressed('W'))
-		cannonVec += glm::vec3(1.0f, 0.0f, 0.0f);
-	if (GDP_IsKeyPressed('s') || GDP_IsKeyPressed('S'))
-		cannonVec += glm::vec3(-1.0f, 0.0f, 0.0f);
-	if (GDP_IsKeyPressed(32))
+	if (GDP_IsKeyPressed('a') || GDP_IsKeyPressed('A') || GDP_IsKeyHeldDown('a') || GDP_IsKeyHeldDown('A'))
+		aimVec += glm::vec3(0.0f, 0.01f, 0.0f);
+	if (GDP_IsKeyPressed('d') || GDP_IsKeyPressed('D') || GDP_IsKeyHeldDown('d') || GDP_IsKeyHeldDown('D'))
+		aimVec += glm::vec3(0.0f, -0.01f, 0.0f);
+	if (GDP_IsKeyPressed('w') || GDP_IsKeyPressed('W') || GDP_IsKeyHeldDown('w') || GDP_IsKeyHeldDown('W'))
+		aimVec += glm::vec3(0.01f, 0.0f, 0.0f);
+	if (GDP_IsKeyPressed('s') || GDP_IsKeyPressed('S') || GDP_IsKeyHeldDown('s') || GDP_IsKeyHeldDown('S'))
+		aimVec += glm::vec3(-0.01f, 0.0f, 0.0f);
+	if (GDP_IsKeyPressed('1'))
+		selectedMuni = MORTAR;
+	if (GDP_IsKeyPressed('2'))
+		selectedMuni = ICBM;
+	if (GDP_IsKeyPressed('3'))
+		selectedMuni = MISSILE;
+	if (GDP_IsKeyPressed('4'))
+		selectedMuni = LASER;
+	if (GDP_IsKeyPressed('5'))
+		selectedMuni = CLUSTER;
+	if (GDP_IsKeyPressed(32) || (GDP_IsKeyHeldDown(32) && selectedMuni == 'ICBM'))
 		this->FireProjectile();
 	if (GDP_IsKeyPressed('n') || GDP_IsKeyPressed('N'))
 		this->StartNewGame();
-
+	// Calling the physics system to update all living particles
 	particleSystem->Integrate(0.01f);
+	// Iteration to reflect the updated particles position on the objects drawn in screen
 	for (int i = 0; i < particleSystem->getNumParticles(); i++) {
 		Particle* p = particleSystem->getParticle(i);
 		m_Bullet[i]->Position = p->getPosition();
@@ -201,8 +215,41 @@ GameObject* ArtilleryGame::CreateGameObjectByType(const std::string& type)
 void ArtilleryGame::FireProjectile() {
 	// Undefined Bullet Type Up Vector
 	// For each type of Bullet we are going to define a specific up vector
-	particleSystem->AllocateParticle(MORTAR);
-	
+	float defaultAge	 = 15.0f;
+	float defaultDamping =  1.0f;
+	float defaultMass	 =	1.0f;
+
+	// Normalizes the aimVector and checks if its 0.0f
+	glm::vec3 aimedUpVector;
+	if (aimVec == glm::vec3(0.0f))
+		aimedUpVector = glm::vec3(0.0f);
+	else
+		aimedUpVector = glm::normalize(aimVec);
+
+	switch (selectedMuni) {
+		// Each case will SUM the Munition Type Up Vector with the Normalized vector resulted from Aiming
+		// Then it will allocate a particle passing this new Up Vector modified by the aim, an age, damping and mass
+	case MORTAR:
+		aimedUpVector += glm::vec3(0.0f, 10.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		break;
+	case ICBM:
+		aimedUpVector += glm::vec3(10.0f, 10.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		break;
+	case MISSILE:
+		aimedUpVector += glm::vec3(50.0f, 0.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		break;
+	case LASER:
+		aimedUpVector += glm::vec3(50.0f, 0.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		break;
+	case CLUSTER:
+		aimedUpVector += glm::vec3(0.0f, 10.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		break;
+	}	
 }
 
 // Utility function for a random range of two floats

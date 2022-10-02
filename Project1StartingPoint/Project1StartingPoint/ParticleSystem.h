@@ -3,13 +3,6 @@
 #include <vector>
 #include "Particle.h"
 
-typedef unsigned int munition;
-#define MORTAR				0
-#define INTERCONTINENTAL	1
-#define MISSILE				2
-#define LASER				3
-#define CLUSTER				4
-
 class ParticleSystem {
 public:
 	// Default Constructor
@@ -22,8 +15,11 @@ public:
 
 
 	// Method that grabs a dead Particlle from the pool and make it alive
-	// accepts munition type
-	void AllocateParticle(munition type);
+	// accepts Up Vector
+	void AllocateParticle(glm::vec3 upVector);
+	// Method that grabs a dead Particlle from the pool and make it alive
+	// accepts Up Vector,  Age, Damping and Mass
+	void AllocateParticle(glm::vec3 upVector, float age, float damping, float mass);
 	// Method that Integrate all living particles
 	// Accets float deltaType
 	void Integrate(float dt);

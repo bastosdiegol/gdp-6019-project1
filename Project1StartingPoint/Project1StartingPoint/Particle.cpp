@@ -11,7 +11,7 @@
 // Default Constructor
 Particle::Particle() :	position(0.0f)
 					  , velocity(0.0f)
-					  , acceleration(0.0f)
+					  , acceleration(-9.8f) // Gravity
 					  , damping(1.0f)
 					  , mass(1.0f)
 					  , age(-1.0f){
