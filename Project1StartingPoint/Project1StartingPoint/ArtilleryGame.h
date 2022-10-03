@@ -37,8 +37,11 @@ private:
 	glm::vec3					aimVec;
 	munition					selectedMuni;
 	bool						isGameOver;
-	const unsigned int			MAX_BULLETS = 200;
-	const int					EXPLOSION_PARTICLES = 100;
+	bool						isExplosionTime = false;
+	const unsigned int			MAX_BULLETS			= 50;
+	const int					EXPLOSION_PARTICLES = 50;
+	float						EXPLOSION_TIMER		= 0.0f;
+	const float					EXPLOSION_DURATION	= 3.0f;
 
 	void FireProjectile();
 	void CreateExplosion(glm::vec3 position);

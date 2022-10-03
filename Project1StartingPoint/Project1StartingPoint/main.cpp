@@ -42,7 +42,7 @@ void LoadAllGameAssets() {
 	GDP_CreateMaterial(PlayerMaterialId,	playerTankTextureId	, GREEN);
 	GDP_CreateMaterial(BulletMaterialId,	bulletTextureId		, BLUE);
 	GDP_CreateMaterial(groundMaterialId,	groundTextureId		, WHITE);
-	GDP_CreateMaterial(BulletMaterialId,	explosionTextureId	, RED);
+	GDP_CreateMaterial(ExplosionMaterialId,	explosionTextureId	, RED);
 
 	unsigned int groundModelId;
 	GDP_LoadModel(TankModelId, "assets/models/tank.obj");

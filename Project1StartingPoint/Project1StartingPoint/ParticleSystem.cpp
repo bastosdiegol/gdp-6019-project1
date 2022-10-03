@@ -93,7 +93,67 @@ void ParticleSystem::AllocateParticle(glm::vec3 upVector, glm::vec3 acceleration
 	return;
 }
 
-bool ParticleSystem::IntegrateAndCheckColision(float dt, glm::vec3 enemyPosition){
+// Method that grabs a dead Particlle from the pool and make it alive
+// accepts Position Up Vector, Acceleration, Age, Damping and Mass
+void ParticleSystem::AllocateParticle(glm::vec3 position, glm::vec3 upVector, glm::vec3 acceleration, float age, float damping, float mass){
+	DEBUG_PRINT("ParticleSystem::AllocateParticle(munition type);\n");
+	// Checks if there are particles available
+	if (numParticlesAvail == 0) {
+		DEBUG_PRINT("ParticleSystem::AllocateParticle - Error - All particles are alive, can't create a new particle!\n");
+		return;
+	}
+	// Cheks if particle available at index is alive
+	Particle& p = particles[indexAvailParticle];
+	if (p.getAge() >= 0) {
+		DEBUG_PRINT("ParticleSystem::AllocateParticle - Error - Oldest particle still alive, can't create a new particle!\n");
+		return;
+	}
+
+	// Transform the dead particle into a living one
+	p.setPosition(position);
+	p.setVelocity(upVector);
+	p.setAcceleration(acceleration);
+	p.setAge(age);
+	p.setDamping(damping);
+	p.setMass(mass);
+
+	// Particle allocated, one less particle available
+	this->numParticlesAvail--;
+	// Checks if index is at the end of the vector, if so index = 0, else index++
+	indexAvailParticle == (numParticles - 1) ? indexAvailParticle = 0 : indexAvailParticle++;
+	return;
+}
+
+// Method that Integrate all living particles
+// Accepts float deltaType
+void ParticleSystem::Integrate(float dt){
+	for (int i = 0; i < numParticles; i++) {
+		Particle& p = particles[i];
+		// Checks if the particle is alive
+		if (p.getAge() > 0) {
+			p.Integrate(dt);
+			// Checks if the position of the particle isn't the ground
+			if (p.getPosition().y <= 0.0f) {
+				// Reset the particle if its on the ground
+				p.setAge(-1);
+				p.setPosition(this->position);
+				numParticlesAvail++;
+				DEBUG_PRINT("ParticleSystem::Integrate Particle Reseted\n");
+			}
+		}
+		else if (p.getAge() < 0 && p.getAge() != -1) {
+			// Reset the particle if its dead
+			p.setAge(-1);
+			p.setPosition(this->position);
+			numParticlesAvail++;
+			DEBUG_PRINT("ParticleSystem::Integrate Particle Reseted\n");
+		}
+	}
+}
+
+// Method that Integrate all living particles and checks for Collision
+// Accepts float deltaType
+bool ParticleSystem::IntegrateAndCheckCollision(float dt, glm::vec3 enemyPosition){
 	for (int i = 0; i < numParticles; i++) {
 		Particle& p = particles[i];
 		// Checks if the particle is alive
@@ -175,4 +235,9 @@ Particle* ParticleSystem::getParticle(unsigned int index)
 unsigned int ParticleSystem::getNumParticles()
 {
 	return this->numParticles;
+}
+
+unsigned int ParticleSystem::getNumParticlesAvail()
+{
+	return this->numParticlesAvail;
 }

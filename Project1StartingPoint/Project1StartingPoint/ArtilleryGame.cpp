@@ -21,6 +21,7 @@ unsigned int ProjectileModelId;
 unsigned int PlayerMaterialId;
 unsigned int EnemyMaterialId;
 unsigned int BulletMaterialId;
+unsigned int ExplosionMaterialId;
 
 
 // TODO:
@@ -80,8 +81,8 @@ void ArtilleryGame::Initialize()
 	}
 	m_ExplosionParticles.resize(EXPLOSION_PARTICLES);
 	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
-		m_Bullet[i] = CreateGameObjectByType("ExplosionParticle");
-		m_Bullet[i]->Position = m_EnemyTank->Position;
+		m_ExplosionParticles[i] = CreateGameObjectByType("ExplosionParticle");
+		m_ExplosionParticles[i]->Position = m_EnemyTank->Position;
 	}
 }
 
@@ -117,8 +118,15 @@ void ArtilleryGame::StartNewGame()
 	m_EnemyTank->Position	= glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
 	aimVec					= glm::vec3(0.0f);
 	isGameOver				= false;
+	isExplosionTime			= false;
+	EXPLOSION_TIMER			= 0.0f;
 	particleSystem->setPosition(m_PlayerTank->Position);
-
+	for (int i = 0; i < MAX_BULLETS; i++) {
+		m_Bullet[i]->Position = m_PlayerTank->Position;
+	}
+	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
+		m_ExplosionParticles[i]->Position = m_EnemyTank->Position;
+	}
 }
 
 /// <summary>
@@ -165,18 +173,29 @@ void ArtilleryGame::GameUpdate()
 		this->FireProjectile();
 	if (GDP_IsKeyPressed('n') || GDP_IsKeyPressed('N'))
 		this->StartNewGame();
-	// Calling the physics system to update all living particles
-	if (!isGameOver) {
-		isGameOver = particleSystem->IntegrateAndCheckColision(0.01f, m_EnemyTank->Position);
+	
+	if(!isGameOver) {
+		// Calling the physics system to update all living particles
+		isGameOver = particleSystem->IntegrateAndCheckCollision(0.01f, m_EnemyTank->Position);
 		if (isGameOver) {
 			std::cout << "Enemy defeated! Press (N) for a new game!" << std::endl;
 			CreateExplosion(m_EnemyTank->Position);
 			m_EnemyTank->Position = glm::vec3(99.9f);
+			isExplosionTime = true;
 		}
 		// Iteration to reflect the updated particles position on the objects drawn in screen
 		for (int i = 0; i < particleSystem->getNumParticles(); i++) {
 			Particle* p = particleSystem->getParticle(i);
 			m_Bullet[i]->Position = p->getPosition();
+		}
+	}
+	if (isExplosionTime && EXPLOSION_TIMER < EXPLOSION_DURATION) {
+		particleSystem->Integrate(0.01f);
+		EXPLOSION_TIMER += 0.01f;
+		// Iteration to reflect the updated explosion particles position on the objects drawn in screen
+		for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
+			Particle* p = particleSystem->getParticle(i);
+			m_ExplosionParticles[i]->Position = p->getPosition();
 		}
 	}
 }
@@ -224,7 +243,7 @@ GameObject* ArtilleryGame::CreateGameObjectByType(const std::string& type)
 		GameObject* go = GDP_CreateGameObject();
 		go->Renderer.ShaderId = 1;
 		go->Renderer.MeshId = ProjectileModelId;
-		go->Renderer.MaterialId = BulletMaterialId;
+		go->Renderer.MaterialId = ExplosionMaterialId;
 		go->Position = glm::vec3(0, 0, 0);
 		return go;
 	}
@@ -260,12 +279,12 @@ void ArtilleryGame::FireProjectile() {
 		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
 	case MISSILE:
-		aimedUpVector += glm::vec3(15.0f, 10.0f, 0.0f);
+		aimedUpVector += glm::vec3(20.0f, 20.0f, 0.0f);
 		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
 	case LASER:
-		aimedUpVector += glm::vec3(5.0f, 0.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, glm::vec3(0.0f), defaultAge, defaultDamping, defaultMass);
+		aimedUpVector += glm::vec3(1.0f, 0.0f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, aimedUpVector, defaultAge, 0.0f, defaultMass);
 		break;
 	case CLUSTER:
 		aimedUpVector += glm::vec3(10.0f, 10.0f, 0.0f);
@@ -277,13 +296,28 @@ void ArtilleryGame::FireProjectile() {
 void ArtilleryGame::CreateExplosion(glm::vec3 position){
 	float defaultDamping = 1.0f;
 	float defaultMass = 1.0f;
-	float max = 15;
-	float min = 1;
-	glm::vec3 gravity(0.0f, -9.8f, 0.0f);
+	float xmax = 2;
+	float xmin = -2;
+	float ymax = 2;
+	float ymin = -2;
+	float zmax = 2;
+	float zmin = -2;
+	glm::vec3 gravity(-9.8f);
 
 	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
-		particleSystem->AllocateParticle(glm::vec3(RandFloat(max,min), RandFloat(max, min), RandFloat(max, min)), gravity, RandFloat(max, min), defaultDamping, defaultMass);
+		particleSystem->AllocateParticle(position
+										, glm::vec3(RandFloat(xmax, xmin), RandFloat(ymax, ymin), RandFloat(zmax, zmin))
+										, gravity
+										, EXPLOSION_DURATION
+										, defaultDamping
+										, defaultMass);
 	}
+
+	//float dt = 0;
+	//while (dt < EXPLOSION_DURATION) {
+	//	particleSystem->Integrate(0.01f);
+	//	dt += 0.01f;
+	//}
 }
 
 // Utility function for a random range of two floats
