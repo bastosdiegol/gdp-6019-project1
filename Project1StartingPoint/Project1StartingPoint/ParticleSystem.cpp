@@ -65,7 +65,7 @@ void ParticleSystem::AllocateParticle(glm::vec3 upVector){
 
 // Method that grabs a dead Particlle from the pool and make it alive
 // accepts Up Vector, Acceleration, Age, Damping and Mass
-void ParticleSystem::AllocateParticle(glm::vec3 upVector, glm::vec3 acceleration, float age, float damping, float mass){
+void ParticleSystem::AllocateParticle(glm::vec3 upVector, glm::vec3 acceleration, float age, float damping, float mass, munition type){
 	DEBUG_PRINT("ParticleSystem::AllocateParticle(munition type);\n");
 	// Checks if there are particles available
 	if (numParticlesAvail == 0) {
@@ -85,6 +85,10 @@ void ParticleSystem::AllocateParticle(glm::vec3 upVector, glm::vec3 acceleration
 	p.setAge(age);
 	p.setDamping(damping);
 	p.setMass(mass);
+	p.setMunitionType(type);
+	if (type == CLUSTER) {
+		p.setIsClusterArmed(true);
+	}
 
 	// Particle allocated, one less particle available
 	this->numParticlesAvail--;
@@ -159,6 +163,34 @@ bool ParticleSystem::IntegrateAndCheckCollision(float dt, glm::vec3 enemyPositio
 		// Checks if the particle is alive
 		if (p.getAge() > 0) {
 			p.Integrate(dt);
+			// Checks if munition type is cluster and its armed
+			if (p.getIsClusterArmed() && p.getMuniType() == CLUSTER) {
+				// Checks if Y Velocity is Negative -- projectile is descending
+				if (p.getVelocity().y < 0) {
+					// Cluster Detonation Code Here
+					int clusterSubMunitions = 20;
+					float maxDispersion = 2.0f;
+					float minDispersion = -2.0f;
+					// Allocates all cluster submunitions
+					for (int i = 0; i < clusterSubMunitions; i++) {
+						AllocateParticle(p.getPosition()
+									   , p.getVelocity() 
+									   + glm::vec3(RandFloat(minDispersion, maxDispersion)
+												 , RandFloat(minDispersion, maxDispersion)
+												 , RandFloat(minDispersion, maxDispersion))
+									   , p.getAcceleration()
+									   , p.getAge()
+									   , p.getDamping()
+									   , p.getMass());
+					}
+					// Next time it wont get inside the cluster detonation loop
+					p.setIsClusterArmed(false);
+					// Kills the cluster particle that exploded
+					p.setAge(-1);
+					p.setPosition(this->position);
+					numParticlesAvail++;
+				}
+			}
 			// Checks if the position of the particle is on the ground
 			if (p.getPosition().y <= 0.0f) {
 				float distanceToTarget = glm::distance(enemyPosition, p.getPosition());
@@ -257,4 +289,14 @@ unsigned int ParticleSystem::getNumParticles()
 unsigned int ParticleSystem::getNumParticlesAvail()
 {
 	return this->numParticlesAvail;
+}
+
+
+// Utility function for a random range of two floats
+float RandFloat(float min, float max) {
+	if (max == min)
+		return 0.f;
+
+	int diff = (max - min) * 1000;
+	return min + (rand() % diff) / 1000.0f;
 }

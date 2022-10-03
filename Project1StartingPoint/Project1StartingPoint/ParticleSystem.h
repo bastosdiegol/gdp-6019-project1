@@ -18,8 +18,8 @@ public:
 	// accepts Up Vector
 	void AllocateParticle(glm::vec3 upVector);
 	// Method that grabs a dead Particlle from the pool and make it alive
-	// accepts Up Vector, Acceleration, Age, Damping and Mass
-	void AllocateParticle(glm::vec3 upVector, glm::vec3 acceleration, float age, float damping, float mass);
+	// accepts Up Vector, Acceleration, Age, Damping, Mass and Munition Type
+	void AllocateParticle(glm::vec3 upVector, glm::vec3 acceleration, float age, float damping, float mass, munition type);
 	// Method that grabs a dead Particlle from the pool and make it alive
 	// accepts Position Up Vector, Acceleration, Age, Damping and Mass
 	void AllocateParticle(glm::vec3 position, glm::vec3 upVector, glm::vec3 acceleration, float age, float damping, float mass);
@@ -57,4 +57,5 @@ private:
 	glm::vec3 position;
 };
 
-
+// Utility function for a random range of two floats
+float RandFloat(float min, float max);

@@ -21,8 +21,6 @@ public:
 	// Overloaded Copy Operator
 	Particle operator=(const Particle& particle);
 
-	// Method to print Particle info on the console
-	void PrintInfo();
 	// Method to Integrate the Particle on a specified Delta Time
 	void Integrate(float dt);
 
@@ -33,10 +31,17 @@ public:
 	void setAge(float age);
 	void setDamping(float damping);
 	void setMass(float mass);
+	void setMunitionType(munition type);
+	void setIsClusterArmed(bool clusterArmed);
 	// ---
 	glm::vec3 getPosition();
+	glm::vec3 getVelocity();
 	glm::vec3 getAcceleration();
 	float getAge();
+	float getDamping();
+	float getMass();
+	munition getMuniType();
+	bool getIsClusterArmed();
 
 protected:
 	// Variables of the Particle
@@ -44,7 +49,9 @@ protected:
 	glm::vec3 velocity;
 	glm::vec3 acceleration;
 
-	float age;		// ttl
-	float damping;
-	float mass;		// f = ma
+	float	 age;		// ttl
+	float	 damping;
+	float	 mass;		// f = ma
+	munition muniType;	// Type of the particle
+	bool	 isClusterArmed = true; // This isn't the best pratice, ideal would be an extended class for CLUSTER munition
 };

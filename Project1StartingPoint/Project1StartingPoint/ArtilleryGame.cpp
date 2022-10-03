@@ -86,6 +86,7 @@ void ArtilleryGame::Initialize()
 		m_ExplosionParticles[i] = CreateGameObjectByType("ExplosionParticle");
 		m_ExplosionParticles[i]->Position = m_EnemyTank->Position;
 	}
+	newGameInfo();
 }
 
 /// <summary>
@@ -132,6 +133,7 @@ void ArtilleryGame::StartNewGame()
 	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {			// Resets all hidden explosion debries
 		m_ExplosionParticles[i]->Position = m_EnemyTank->Position;
 	}
+	newGameInfo();
 }
 
 /// <summary>
@@ -278,23 +280,23 @@ void ArtilleryGame::FireProjectile() {
 		// Then it will allocate a particle passing this new Up Vector modified by the aim, an age, damping and mass
 	case MORTAR:
 		aimedUpVector += glm::vec3(10.0f, 10.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
+		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass, MORTAR);
 		break;
 	case TURRET:
 		aimedUpVector += glm::vec3(5.0f, 5.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
+		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass, TURRET);
 		break;
 	case MISSILE:
 		aimedUpVector += glm::vec3(20.0f, 20.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
+		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass, MISSILE);
 		break;
 	case LASER:
 		aimedUpVector += glm::vec3(5.0f, 0.01f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, aimedUpVector, defaultAge, defaultDamping, defaultMass);
+		particleSystem->AllocateParticle(aimedUpVector, aimedUpVector, defaultAge, defaultDamping, defaultMass, LASER);
 		break;
 	case CLUSTER:
 		aimedUpVector += glm::vec3(10.0f, 10.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
+		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass, CLUSTER);
 		break;
 	}	
 }
@@ -304,18 +306,20 @@ void ArtilleryGame::CreateExplosion(glm::vec3 position){
 	// Collection of min and max values to be used on the creation of the explosion
 	float defaultDamping = 1.0f;
 	float defaultMass = 1.0f;
-	float xmax = 2;
-	float xmin = -2;
-	float ymax = 2;
-	float ymin = -2;
-	float zmax = 2;
-	float zmin = -2;
-	glm::vec3 gravity(-9.8f);
+	float xmax = 5;
+	float xmin = -5;
+	float ymax = 5;
+	float ymin = 1;
+	float zmax = 5;
+	float zmin = -5;
+	glm::vec3 gravity(0.0f, -9.8f, 0.0f);
 
 	// Creates all particles to be used on the explosion
 	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
 		particleSystem->AllocateParticle(position
-										, glm::vec3(RandFloat(xmax, xmin), RandFloat(ymax, ymin), RandFloat(zmax, zmin))
+										, glm::vec3(RandFloat(xmin, xmax)
+												  , RandFloat(ymin, ymax)
+												  , RandFloat(zmin, zmax))
 										, gravity
 										, EXPLOSION_DURATION
 										, defaultDamping
@@ -323,11 +327,17 @@ void ArtilleryGame::CreateExplosion(glm::vec3 position){
 	}
 }
 
-// Utility function for a random range of two floats
-float RandFloat(float min, float max) {
-	if (max == min)
-		return 0.f;
-
-	int diff = (max - min) * 1000;
-	return min + (rand() % diff) / 1000.0f;
+// Outputs lots of gameplay info
+void ArtilleryGame::newGameInfo() {
+	std::cout << "\033[2J\033[1;1H"; // Clear Screen
+	std::cout << "Welcome to the Artillery Game!" << std::endl;
+	std::cout << "Use WASDQE to aim." << std::endl;
+	std::cout << "Press Espace Bar to shoot!" << std::endl;
+	std::cout << "Here are the munitions available and their hotkeys:" << std::endl;
+	std::cout << "1 - MORTAR" << std::endl;
+	std::cout << "2 - TURRET MODE" << std::endl;
+	std::cout << "3 - MISSILE" << std::endl;
+	std::cout << "4 - LASER BEAM" << std::endl;
+	std::cout << "5 - CLUSTER BOMB" << std::endl;
+	std::cout << "Hit the enemy target! Good Luck!" << std::endl;
 }

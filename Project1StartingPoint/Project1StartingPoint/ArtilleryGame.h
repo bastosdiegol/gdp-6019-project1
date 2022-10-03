@@ -49,7 +49,6 @@ private:
 	void FireProjectile();
 	// Function that creates an explosion using the Particle System
 	void CreateExplosion(glm::vec3 position);
+	// Outputs lots of gameplay info
+	void newGameInfo();
 };
-
-// Utility function for a random range of two floats
-float RandFloat(float min, float max);

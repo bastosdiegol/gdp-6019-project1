@@ -41,15 +41,6 @@ Particle Particle::operator=(const Particle& particle) {
 	return Particle(particle);
 }
 
-// Method to print Particle info on the console
-void Particle::PrintInfo() {
-
-	DEBUG_PRINT("-----------------\n");
-	DEBUG_PRINT("Velocity(%f, %f, %f)\n", velocity.x, velocity.y, velocity.z);
-	DEBUG_PRINT("Position(%f, %f, %f)\n", position.x, position.y, position.z);
-
-}
-
 // Method to Integrate the Particle on a specified Delta Time
 void Particle::Integrate(float dt) {
 	//velocity = velocity + acceleration * dt;
@@ -88,9 +79,22 @@ void Particle::setMass(float mass){
 	this->mass = mass;
 }
 
+void Particle::setMunitionType(munition type){
+	this->muniType = type;
+}
+
+void Particle::setIsClusterArmed(bool clusterArmed){
+	this->isClusterArmed = clusterArmed;
+}
+
 glm::vec3 Particle::getPosition()
 {
 	return this->position;
+}
+
+glm::vec3 Particle::getVelocity()
+{
+	return this->velocity;
 }
 
 glm::vec3 Particle::getAcceleration()
@@ -101,4 +105,24 @@ glm::vec3 Particle::getAcceleration()
 float Particle::getAge()
 {
 	return this->age;
+}
+
+float Particle::getDamping()
+{
+	return this->damping;
+}
+
+float Particle::getMass()
+{
+	return this->mass;
+}
+
+munition Particle::getMuniType()
+{
+	return this->muniType;
+}
+
+bool Particle::getIsClusterArmed()
+{
+	return this->isClusterArmed;
 }
