@@ -1,6 +1,8 @@
 #include "ParticleSystem.h"
+#include <iostream>
+#include <iomanip>
 
-#define DEBUG_LOG_ENABLED
+//#define DEBUG_LOG_ENABLED
 #ifdef DEBUG_LOG_ENABLED
 #define DEBUG_PRINT(x, ...) printf(x, __VA_ARGS__)
 #else
@@ -91,20 +93,34 @@ void ParticleSystem::AllocateParticle(glm::vec3 upVector, glm::vec3 acceleration
 	return;
 }
 
-void ParticleSystem::Integrate(float dt){
+bool ParticleSystem::IntegrateAndCheckColision(float dt, glm::vec3 enemyPosition){
 	for (int i = 0; i < numParticles; i++) {
 		Particle& p = particles[i];
-		// Checks if the position of the particle isn't the ground
-		if (p.getPosition().y < 0.0f) {
-			// Reset the particle if its on the ground
-			p.setAge(-1);
-			p.setPosition(this->position);
-			numParticlesAvail++;
-			DEBUG_PRINT("ParticleSystem::Integrate Particle Reseted\n");
-		}
 		// Checks if the particle is alive
 		if (p.getAge() > 0) {
 			p.Integrate(dt);
+			// Checks if the position of the particle isn't the ground
+			if (p.getPosition().y <= 0.0f) {
+
+				float distanceToTarget = glm::distance(enemyPosition, p.getPosition());
+				float enemyRadius = 2.0f;
+				// Float beautifier
+				std::cout << std::fixed             // fix the number of decimal digits
+						  << std::setprecision(2);  // to 2
+				if (distanceToTarget <= enemyRadius) {
+					std::cout << "Hit! Nice Shot!" << std::endl;
+					killAllParticles();
+					return true;
+				} else {
+					std::cout << "Miss! You missed the target by " << std::setw(5) << distanceToTarget << " meters!" << std::endl;
+				}
+
+				// Reset the particle if its on the ground
+				p.setAge(-1);
+				p.setPosition(this->position);
+				numParticlesAvail++;
+				DEBUG_PRINT("ParticleSystem::Integrate Particle Reseted\n");
+			}
 		}
 		else if(p.getAge() < 0 && p.getAge() != -1){
 			// Reset the particle if its dead
@@ -114,6 +130,30 @@ void ParticleSystem::Integrate(float dt){
 			DEBUG_PRINT("ParticleSystem::Integrate Particle Reseted\n");
 		}
 	}
+	return false;
+}
+
+// Method that cheks distance between two vectors
+float ParticleSystem::getDistanceTwoVectors(glm::vec3 v1, glm::vec3 v2)
+{
+	float xdist = v1.x - v2.x;
+	xdist *= xdist;
+
+	float ydist = v1.y - v2.y;
+	ydist *= ydist;
+
+	float zdist = v1.z - v2.z;
+	zdist *= zdist;
+
+	return sqrt(xdist + ydist + zdist);
+}
+
+// Method that resets all particles
+void ParticleSystem::killAllParticles(){
+	for (int i = 0; i < numParticles; i++) {
+		particles[i].setAge(-1);
+	}
+	this->numParticlesAvail = this->numParticles;
 }
 
 // Getters and Setters

@@ -22,7 +22,6 @@ unsigned int PlayerMaterialId;
 unsigned int EnemyMaterialId;
 unsigned int BulletMaterialId;
 
-const unsigned int MAX_BULLETS = 10;
 
 // TODO:
 // #include "YourPhysicsClass.h"
@@ -79,6 +78,11 @@ void ArtilleryGame::Initialize()
 		m_Bullet[i] = CreateGameObjectByType("Bullet");
 		m_Bullet[i]->Position = m_PlayerTank->Position;
 	}
+	m_ExplosionParticles.resize(EXPLOSION_PARTICLES);
+	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
+		m_Bullet[i] = CreateGameObjectByType("ExplosionParticle");
+		m_Bullet[i]->Position = m_EnemyTank->Position;
+	}
 }
 
 /// <summary>
@@ -109,14 +113,11 @@ void ArtilleryGame::StartNewGame()
 {
 	DEBUG_PRINT("ArtilleryGame::StartNewGame\n");
 	// TODO:
-	m_PlayerTank->Position = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
-	m_EnemyTank->Position = glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
+	m_PlayerTank->Position	= glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
+	m_EnemyTank->Position	= glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
+	aimVec					= glm::vec3(0.0f);
+	isGameOver				= false;
 	particleSystem->setPosition(m_PlayerTank->Position);
-	// Setting the position of all bullets to the new PlayerTank position to let them hidden while not used
-	/*for (int i = 0; i < MAX_BULLETS; i++) {
-		m_Bullet[i]->Position = m_PlayerTank->Position;
-	}*/
-	//MessageBox(NULL, (LPCWSTR)L"New Game Begun! Good Luck!", (LPCWSTR)L"New Game", MB_OK | MB_ICONINFORMATION);
 
 }
 
@@ -139,33 +140,44 @@ void ArtilleryGame::GameUpdate()
 	// TODO:
 	// Typically moved to a UserInput Section
 	if (GDP_IsKeyPressed('a') || GDP_IsKeyPressed('A') || GDP_IsKeyHeldDown('a') || GDP_IsKeyHeldDown('A'))
-		aimVec += glm::vec3(0.0f, 0.01f, 0.0f);
-	if (GDP_IsKeyPressed('d') || GDP_IsKeyPressed('D') || GDP_IsKeyHeldDown('d') || GDP_IsKeyHeldDown('D'))
-		aimVec += glm::vec3(0.0f, -0.01f, 0.0f);
-	if (GDP_IsKeyPressed('w') || GDP_IsKeyPressed('W') || GDP_IsKeyHeldDown('w') || GDP_IsKeyHeldDown('W'))
 		aimVec += glm::vec3(0.01f, 0.0f, 0.0f);
-	if (GDP_IsKeyPressed('s') || GDP_IsKeyPressed('S') || GDP_IsKeyHeldDown('s') || GDP_IsKeyHeldDown('S'))
+	if (GDP_IsKeyPressed('d') || GDP_IsKeyPressed('D') || GDP_IsKeyHeldDown('d') || GDP_IsKeyHeldDown('D'))
 		aimVec += glm::vec3(-0.01f, 0.0f, 0.0f);
+	if (GDP_IsKeyPressed('w') || GDP_IsKeyPressed('W') || GDP_IsKeyHeldDown('w') || GDP_IsKeyHeldDown('W'))
+		aimVec += glm::vec3(0.0f, 0.0f, 0.01f);
+	if (GDP_IsKeyPressed('s') || GDP_IsKeyPressed('S') || GDP_IsKeyHeldDown('s') || GDP_IsKeyHeldDown('S'))
+		aimVec += glm::vec3(0.0f, 0.0f, -0.01f);
+	if (GDP_IsKeyPressed('q') || GDP_IsKeyPressed('Q') || GDP_IsKeyHeldDown('q') || GDP_IsKeyHeldDown('Q'))
+		aimVec += glm::vec3(0.0f, -0.01f, 0.0f);
+	if (GDP_IsKeyPressed('e') || GDP_IsKeyPressed('E') || GDP_IsKeyHeldDown('e') || GDP_IsKeyHeldDown('E'))
+		aimVec += glm::vec3(0.0f, 0.01f, 0.0f);
 	if (GDP_IsKeyPressed('1'))
 		selectedMuni = MORTAR;
 	if (GDP_IsKeyPressed('2'))
-		selectedMuni = ICBM;
+		selectedMuni = TURRET;
 	if (GDP_IsKeyPressed('3'))
 		selectedMuni = MISSILE;
 	if (GDP_IsKeyPressed('4'))
 		selectedMuni = LASER;
 	if (GDP_IsKeyPressed('5'))
 		selectedMuni = CLUSTER;
-	if (GDP_IsKeyPressed(32) || (GDP_IsKeyHeldDown(32) && selectedMuni == 'ICBM'))
+	if (GDP_IsKeyPressed(32) || (GDP_IsKeyHeldDown(32) && selectedMuni == TURRET))
 		this->FireProjectile();
 	if (GDP_IsKeyPressed('n') || GDP_IsKeyPressed('N'))
 		this->StartNewGame();
 	// Calling the physics system to update all living particles
-	particleSystem->Integrate(0.01f);
-	// Iteration to reflect the updated particles position on the objects drawn in screen
-	for (int i = 0; i < particleSystem->getNumParticles(); i++) {
-		Particle* p = particleSystem->getParticle(i);
-		m_Bullet[i]->Position = p->getPosition();
+	if (!isGameOver) {
+		isGameOver = particleSystem->IntegrateAndCheckColision(0.01f, m_EnemyTank->Position);
+		if (isGameOver) {
+			std::cout << "Enemy defeated! Press (N) for a new game!" << std::endl;
+			CreateExplosion(m_EnemyTank->Position);
+			m_EnemyTank->Position = glm::vec3(99.9f);
+		}
+		// Iteration to reflect the updated particles position on the objects drawn in screen
+		for (int i = 0; i < particleSystem->getNumParticles(); i++) {
+			Particle* p = particleSystem->getParticle(i);
+			m_Bullet[i]->Position = p->getPosition();
+		}
 	}
 }
 
@@ -207,6 +219,15 @@ GameObject* ArtilleryGame::CreateGameObjectByType(const std::string& type)
 		go->Position = glm::vec3(0, 0, 0);
 		return go;
 	}
+	if (type.compare("ExplosionParticle") == 0) {
+		DEBUG_PRINT("Create Explosion Particle!\n");
+		GameObject* go = GDP_CreateGameObject();
+		go->Renderer.ShaderId = 1;
+		go->Renderer.MeshId = ProjectileModelId;
+		go->Renderer.MaterialId = BulletMaterialId;
+		go->Position = glm::vec3(0, 0, 0);
+		return go;
+	}
 
 	// Invalid game object type, return nullptr
 	return nullptr;
@@ -221,11 +242,11 @@ void ArtilleryGame::FireProjectile() {
 	// Gravity Acceleration
 	glm::vec3 gravity(0.0f, -9.8f, 0.0f);
 	// Normalizes the aimVector and checks if its 0.0f
-	glm::vec3 aimedUpVector;
-	if (aimVec == glm::vec3(0.0f))
-		aimedUpVector = glm::vec3(0.0f);
-	else
-		aimedUpVector = glm::normalize(aimVec);
+	glm::vec3 aimedUpVector = aimVec;
+	//if (aimVec == glm::vec3(0.0f))
+	//	aimedUpVector = glm::vec3(0.0f);
+	//else
+	//	aimedUpVector = glm::normalize(aimVec);
 
 	switch (selectedMuni) {
 		// Each case will SUM the Munition Type Up Vector with the Normalized vector resulted from Aiming
@@ -234,8 +255,8 @@ void ArtilleryGame::FireProjectile() {
 		aimedUpVector += glm::vec3(10.0f, 10.0f, 0.0f);
 		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
-	case ICBM:
-		aimedUpVector += glm::vec3(20.0f, 20.0f, 0.0f);
+	case TURRET:
+		aimedUpVector += glm::vec3(5.0f, 5.0f, 0.0f);
 		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
 	case MISSILE:
@@ -243,7 +264,7 @@ void ArtilleryGame::FireProjectile() {
 		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
 	case LASER:
-		aimedUpVector += glm::vec3(10.0f, 0.0f, 0.0f);
+		aimedUpVector += glm::vec3(5.0f, 0.0f, 0.0f);
 		particleSystem->AllocateParticle(aimedUpVector, glm::vec3(0.0f), defaultAge, defaultDamping, defaultMass);
 		break;
 	case CLUSTER:
@@ -251,6 +272,18 @@ void ArtilleryGame::FireProjectile() {
 		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
 	}	
+}
+
+void ArtilleryGame::CreateExplosion(glm::vec3 position){
+	float defaultDamping = 1.0f;
+	float defaultMass = 1.0f;
+	float max = 15;
+	float min = 1;
+	glm::vec3 gravity(0.0f, -9.8f, 0.0f);
+
+	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
+		particleSystem->AllocateParticle(glm::vec3(RandFloat(max,min), RandFloat(max, min), RandFloat(max, min)), gravity, RandFloat(max, min), defaultDamping, defaultMass);
+	}
 }
 
 // Utility function for a random range of two floats

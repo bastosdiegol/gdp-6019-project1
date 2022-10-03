@@ -30,16 +30,19 @@ void LoadAllGameAssets() {
 	unsigned int playerTankTextureId;
 	unsigned int bulletTextureId;
 	unsigned int groundTextureId;
+	unsigned int explosionTextureId;
 	GDP_LoadTexture(enemyTankTextureId, "assets/textures/tanktexture.png");
 	GDP_LoadTexture(playerTankTextureId, "assets/textures/tanktexture.png");
 	GDP_LoadTexture(bulletTextureId, "assets/textures/tanktexture.png");
 	GDP_LoadTexture(groundTextureId, "assets/textures/grid.png");
+	GDP_LoadTexture(explosionTextureId, "assets/textures/tanktexture.png");
 
 	unsigned int groundMaterialId;
-	GDP_CreateMaterial(EnemyMaterialId, enemyTankTextureId, RED);
-	GDP_CreateMaterial(PlayerMaterialId, playerTankTextureId, GREEN);
-	GDP_CreateMaterial(BulletMaterialId, bulletTextureId, BLUE);
-	GDP_CreateMaterial(groundMaterialId, groundTextureId, WHITE);
+	GDP_CreateMaterial(EnemyMaterialId,		enemyTankTextureId	, RED);
+	GDP_CreateMaterial(PlayerMaterialId,	playerTankTextureId	, GREEN);
+	GDP_CreateMaterial(BulletMaterialId,	bulletTextureId		, BLUE);
+	GDP_CreateMaterial(groundMaterialId,	groundTextureId		, WHITE);
+	GDP_CreateMaterial(BulletMaterialId,	explosionTextureId	, RED);
 
 	unsigned int groundModelId;
 	GDP_LoadModel(TankModelId, "assets/models/tank.obj");

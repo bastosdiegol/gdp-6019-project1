@@ -22,9 +22,15 @@ public:
 	void AllocateParticle(glm::vec3 upVector, glm::vec3 acceleration, float age, float damping, float mass);
 	// Method that Integrate all living particles
 	// Accets float deltaType
-	void Integrate(float dt);
+	bool IntegrateAndCheckColision(float dt, glm::vec3 enemyPosition);
+	// Method that checks if theres projectile collision with the enemy
+	bool isEnemyHit(glm::vec3 enemyPosition);
 	// Method that outputs the values of each living particle
 	void PrintParticleInfo();
+	// Method that cheks distance between two vectors
+	float getDistanceTwoVectors(glm::vec3 v1, glm::vec3 v2);
+	// Method that resets all particles
+	void killAllParticles();
 
 	// Getters and Setters
 	void setPosition(glm::vec3 position);
