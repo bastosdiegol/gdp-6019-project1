@@ -72,13 +72,15 @@ void ArtilleryGame::Initialize()
 	//m_Bullet->Position     = m_PlayerTank->Position;
 
 	// Creating of N bullets to be used
-	// Setting the position of all bullets to the PlayerTank position to let them hidden while not used
+	// Setting the position of all bullets to the PlayerTank position to set them hidden while not used
 	particleSystem = new ParticleSystem(m_PlayerTank->Position, MAX_BULLETS);
 	m_Bullet.resize(MAX_BULLETS);
 	for (int i = 0; i < MAX_BULLETS; i++) {
 		m_Bullet[i] = CreateGameObjectByType("Bullet");
 		m_Bullet[i]->Position = m_PlayerTank->Position;
 	}
+	// Creating of N particles to be used on the explosion
+	// Setting the position of all bullets to the EnemyTank position to set them hidden while not used
 	m_ExplosionParticles.resize(EXPLOSION_PARTICLES);
 	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
 		m_ExplosionParticles[i] = CreateGameObjectByType("ExplosionParticle");
@@ -100,6 +102,9 @@ void ArtilleryGame::Destroy()
 	for (int i = 0; i < MAX_BULLETS; i++) {
 		delete m_Bullet[i];
 	}
+	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
+		delete m_ExplosionParticles[i];
+	}
 }
 
 /// <summary>
@@ -116,15 +121,15 @@ void ArtilleryGame::StartNewGame()
 	// TODO:
 	m_PlayerTank->Position	= glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
 	m_EnemyTank->Position	= glm::vec3(RandFloat(-20.0f, 20.0f), 0, RandFloat(-20.0f, 20.0f));
-	aimVec					= glm::vec3(0.0f);
-	isGameOver				= false;
-	isExplosionTime			= false;
-	EXPLOSION_TIMER			= 0.0f;
-	particleSystem->setPosition(m_PlayerTank->Position);
+	aimVec					= glm::vec3(0.0f);				// Resets the aim
+	isGameOver				= false;						// Resets the game
+	isExplosionTime			= false;						// Resets the explosion
+	EXPLOSION_TIMER			= 0.0f;							// Resets the explosion timer
+	particleSystem->setPosition(m_PlayerTank->Position);	// Resets all hidden bullets
 	for (int i = 0; i < MAX_BULLETS; i++) {
 		m_Bullet[i]->Position = m_PlayerTank->Position;
 	}
-	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
+	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {			// Resets all hidden explosion debries
 		m_ExplosionParticles[i]->Position = m_EnemyTank->Position;
 	}
 }
@@ -252,6 +257,7 @@ GameObject* ArtilleryGame::CreateGameObjectByType(const std::string& type)
 	return nullptr;
 }
 
+// Function that allocates a particle and fire it as projectile
 void ArtilleryGame::FireProjectile() {
 	// Undefined Bullet Type Up Vector
 	// For each type of Bullet we are going to define a specific up vector
@@ -293,7 +299,9 @@ void ArtilleryGame::FireProjectile() {
 	}	
 }
 
+// Function that creates an explosion using the Particle System
 void ArtilleryGame::CreateExplosion(glm::vec3 position){
+	// Collection of min and max values to be used on the creation of the explosion
 	float defaultDamping = 1.0f;
 	float defaultMass = 1.0f;
 	float xmax = 2;
@@ -304,6 +312,7 @@ void ArtilleryGame::CreateExplosion(glm::vec3 position){
 	float zmin = -2;
 	glm::vec3 gravity(-9.8f);
 
+	// Creates all particles to be used on the explosion
 	for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
 		particleSystem->AllocateParticle(position
 										, glm::vec3(RandFloat(xmax, xmin), RandFloat(ymax, ymin), RandFloat(zmax, zmin))
@@ -312,12 +321,6 @@ void ArtilleryGame::CreateExplosion(glm::vec3 position){
 										, defaultDamping
 										, defaultMass);
 	}
-
-	//float dt = 0;
-	//while (dt < EXPLOSION_DURATION) {
-	//	particleSystem->Integrate(0.01f);
-	//	dt += 0.01f;
-	//}
 }
 
 // Utility function for a random range of two floats

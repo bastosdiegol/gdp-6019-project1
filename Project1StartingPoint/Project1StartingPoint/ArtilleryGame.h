@@ -6,13 +6,6 @@
 
 using namespace gdp; 
 
-typedef unsigned int munition;
-#define MORTAR	0
-#define TURRET	1
-#define MISSILE	2
-#define LASER	3
-#define CLUSTER	4
-
 class ArtilleryGame {
 public:
 	ArtilleryGame();
@@ -33,17 +26,28 @@ private:
 	std::vector<GameObject*>	m_Bullet;
 	std::vector<GameObject*>	m_ExplosionParticles;
 
+	// Instance of Particle System
 	ParticleSystem*				particleSystem;
+	// Up vector for the cannon aim
 	glm::vec3					aimVec;
+	// Current selected munition
 	munition					selectedMuni;
+	// Variable to check if enemy is hit and game is over
 	bool						isGameOver;
+	// Variable to check if enemy is hit and its time for explosion effect
 	bool						isExplosionTime = false;
+	// Total number of particles used for bullets
 	const unsigned int			MAX_BULLETS			= 50;
+	// Total number of particles used on the explosion - Cannot be higer then MAX_BULLETS
 	const int					EXPLOSION_PARTICLES = 50;
+	// Timer to check time elapsed during explosion
 	float						EXPLOSION_TIMER		= 0.0f;
+	// Expected life cycle duration of explosion particles
 	const float					EXPLOSION_DURATION	= 3.0f;
 
+	// Function that allocates a particle and fire it as projectile
 	void FireProjectile();
+	// Function that creates an explosion using the Particle System
 	void CreateExplosion(glm::vec3 position);
 };
 

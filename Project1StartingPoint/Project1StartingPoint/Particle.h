@@ -1,6 +1,13 @@
 #pragma once
 #include <gdp/Engine.h>
 
+typedef unsigned int munition;
+#define MORTAR	0
+#define TURRET	1
+#define MISSILE	2
+#define LASER	3
+#define CLUSTER	4
+
 class Particle {
 public:
 	// Default Constructor
@@ -19,7 +26,7 @@ public:
 	// Method to Integrate the Particle on a specified Delta Time
 	void Integrate(float dt);
 
-	//Getters and Setters
+	// Getters and Setters
 	void setPosition(glm::vec3 position);
 	void setVelocity(glm::vec3 velocity);
 	void setAcceleration(glm::vec3 acceleration);
