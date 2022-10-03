@@ -28,6 +28,7 @@ public:
 	void setMass(float mass);
 	// ---
 	glm::vec3 getPosition();
+	glm::vec3 getAcceleration();
 	float getAge();
 
 protected:

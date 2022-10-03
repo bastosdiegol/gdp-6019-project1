@@ -61,12 +61,6 @@ void Particle::Integrate(float dt) {
 
 	// Aging the Particle
 	age -= dt;
-
-	// In case the particle hit the ground
-	// Set age to -1 to kill it
-	/*if (position.y <= 0.f) {
-		age = -1.0f;
-	}*/
 }
 
 // Getters and Setters
@@ -97,6 +91,11 @@ void Particle::setMass(float mass){
 glm::vec3 Particle::getPosition()
 {
 	return this->position;
+}
+
+glm::vec3 Particle::getAcceleration()
+{
+	return this->acceleration;
 }
 
 float Particle::getAge()

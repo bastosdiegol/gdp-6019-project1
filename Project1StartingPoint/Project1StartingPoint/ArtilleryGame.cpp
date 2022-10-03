@@ -169,7 +169,7 @@ void ArtilleryGame::GameUpdate()
 		selectedMuni = LASER;
 	if (GDP_IsKeyPressed('5'))
 		selectedMuni = CLUSTER;
-	if (GDP_IsKeyPressed(32) || (GDP_IsKeyHeldDown(32) && selectedMuni == TURRET))
+	if (GDP_IsKeyPressed(32) || (GDP_IsKeyHeldDown(32) && selectedMuni == TURRET) && !isGameOver)
 		this->FireProjectile();
 	if (GDP_IsKeyPressed('n') || GDP_IsKeyPressed('N'))
 		this->StartNewGame();
@@ -283,8 +283,8 @@ void ArtilleryGame::FireProjectile() {
 		particleSystem->AllocateParticle(aimedUpVector, gravity, defaultAge, defaultDamping, defaultMass);
 		break;
 	case LASER:
-		aimedUpVector += glm::vec3(1.0f, 0.0f, 0.0f);
-		particleSystem->AllocateParticle(aimedUpVector, aimedUpVector, defaultAge, 0.0f, defaultMass);
+		aimedUpVector += glm::vec3(5.0f, 0.01f, 0.0f);
+		particleSystem->AllocateParticle(aimedUpVector, aimedUpVector, defaultAge, defaultDamping, defaultMass);
 		break;
 	case CLUSTER:
 		aimedUpVector += glm::vec3(10.0f, 10.0f, 0.0f);

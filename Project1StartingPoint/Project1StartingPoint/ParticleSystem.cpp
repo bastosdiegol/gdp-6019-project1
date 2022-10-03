@@ -159,7 +159,7 @@ bool ParticleSystem::IntegrateAndCheckCollision(float dt, glm::vec3 enemyPositio
 		// Checks if the particle is alive
 		if (p.getAge() > 0) {
 			p.Integrate(dt);
-			// Checks if the position of the particle isn't the ground
+			// Checks if the position of the particle is the ground
 			if (p.getPosition().y <= 0.0f) {
 
 				float distanceToTarget = glm::distance(enemyPosition, p.getPosition());
@@ -180,6 +180,22 @@ bool ParticleSystem::IntegrateAndCheckCollision(float dt, glm::vec3 enemyPositio
 				p.setPosition(this->position);
 				numParticlesAvail++;
 				DEBUG_PRINT("ParticleSystem::Integrate Particle Reseted\n");
+			}
+			// Checks acceleration to determine if its the LASER
+			else if (p.getAcceleration().y > -9.8f) {
+				float distanceToTarget = glm::distance(enemyPosition, p.getPosition());
+				float enemyRadius = 2.0f;
+				// Float beautifier
+				std::cout << std::fixed             // fix the number of decimal digits
+					<< std::setprecision(2);  // to 2
+				if (distanceToTarget <= enemyRadius) {
+					std::cout << "Hit! Nice Shot!" << std::endl;
+					killAllParticles();
+					return true;
+				}
+				else {
+					std::cout << "The Laser Beam hasn't reached the enemy target yet. Distance to target: " << std::setw(5) << distanceToTarget << " meters!" << std::endl;
+				}
 			}
 		}
 		else if(p.getAge() < 0 && p.getAge() != -1){
