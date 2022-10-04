@@ -30,6 +30,8 @@ private:
 	ParticleSystem*				particleSystem;
 	// Up vector for the cannon aim
 	glm::vec3					aimVec;
+	// Delta Time for Integrations
+	const float					DELTA_TIME = 0.005;
 	// Current selected munition
 	munition					selectedMuni;
 	// Variable to check if enemy is hit and game is over

@@ -48,6 +48,7 @@ void LoadAllGameAssets() {
 	GDP_LoadModel(TankModelId, "assets/models/tank.obj");
 	GDP_LoadModel(ProjectileModelId, "assets/models/tankbullet.obj");
 	GDP_LoadModel(groundModelId, "assets/models/plane.obj");
+	GDP_LoadModel(SquareModelId, "assets/models/square.obj");
 
 	GameObject* ground = GDP_CreateGameObject();
 	ground->Renderer.ShaderId = 1;

@@ -18,6 +18,7 @@
 // - EnemyTank, PlayerTank, and Bullet
 unsigned int TankModelId;
 unsigned int ProjectileModelId;
+unsigned int SquareModelId;
 unsigned int PlayerMaterialId;
 unsigned int EnemyMaterialId;
 unsigned int BulletMaterialId;
@@ -183,7 +184,7 @@ void ArtilleryGame::GameUpdate()
 	
 	if(!isGameOver) {
 		// Calling the physics system to update all living particles
-		isGameOver = particleSystem->IntegrateAndCheckCollision(0.01f, m_EnemyTank->Position);
+		isGameOver = particleSystem->IntegrateAndCheckCollision(DELTA_TIME, m_EnemyTank->Position);
 		if (isGameOver) {
 			std::cout << "Enemy defeated! Press (N) for a new game!" << std::endl;
 			CreateExplosion(m_EnemyTank->Position);
@@ -197,8 +198,8 @@ void ArtilleryGame::GameUpdate()
 		}
 	}
 	if (isExplosionTime && EXPLOSION_TIMER < EXPLOSION_DURATION) {
-		particleSystem->Integrate(0.01f);
-		EXPLOSION_TIMER += 0.01f;
+		particleSystem->Integrate(DELTA_TIME);
+		EXPLOSION_TIMER += DELTA_TIME;
 		// Iteration to reflect the updated explosion particles position on the objects drawn in screen
 		for (int i = 0; i < EXPLOSION_PARTICLES; i++) {
 			Particle* p = particleSystem->getParticle(i);
@@ -249,7 +250,7 @@ GameObject* ArtilleryGame::CreateGameObjectByType(const std::string& type)
 		DEBUG_PRINT("Create Explosion Particle!\n");
 		GameObject* go = GDP_CreateGameObject();
 		go->Renderer.ShaderId = 1;
-		go->Renderer.MeshId = ProjectileModelId;
+		go->Renderer.MeshId = SquareModelId;
 		go->Renderer.MaterialId = ExplosionMaterialId;
 		go->Position = glm::vec3(0, 0, 0);
 		return go;
@@ -263,7 +264,7 @@ GameObject* ArtilleryGame::CreateGameObjectByType(const std::string& type)
 void ArtilleryGame::FireProjectile() {
 	// Undefined Bullet Type Up Vector
 	// For each type of Bullet we are going to define a specific up vector
-	float defaultAge	 = 5.0f;
+	float defaultAge	 = 3.0f;
 	float defaultDamping =  1.0f;
 	float defaultMass	 =	1.0f;
 	// Gravity Acceleration
