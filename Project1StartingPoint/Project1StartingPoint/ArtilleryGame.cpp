@@ -185,16 +185,20 @@ void ArtilleryGame::GameUpdate()
 	if(!isGameOver) {
 		// Calling the physics system to update all living particles
 		isGameOver = particleSystem->IntegrateAndCheckCollision(DELTA_TIME, m_EnemyTank->Position);
-		if (isGameOver) {
-			std::cout << "Enemy defeated! Press (N) for a new game!" << std::endl;
-			CreateExplosion(m_EnemyTank->Position);
-			m_EnemyTank->Position = glm::vec3(99.9f);
-			isExplosionTime = true;
-		}
 		// Iteration to reflect the updated particles position on the objects drawn in screen
 		for (int i = 0; i < particleSystem->getNumParticles(); i++) {
 			Particle* p = particleSystem->getParticle(i);
 			m_Bullet[i]->Position = p->getPosition();
+		}
+		if (isGameOver) {
+			std::cout << "Enemy defeated! Press (N) for a new game!" << std::endl;
+			// Clear bullets on the screen
+			for (int i = 0; i < MAX_BULLETS; i++) {
+				m_Bullet[i]->Position = m_PlayerTank->Position;
+			}
+			CreateExplosion(m_EnemyTank->Position);
+			m_EnemyTank->Position = glm::vec3(99.9f);
+			isExplosionTime = true;
 		}
 	}
 	if (isExplosionTime && EXPLOSION_TIMER < EXPLOSION_DURATION) {
