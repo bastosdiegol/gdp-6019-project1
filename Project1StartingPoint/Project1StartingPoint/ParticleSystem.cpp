@@ -232,6 +232,14 @@ bool ParticleSystem::IntegrateAndCheckCollision(float dt, glm::vec3 enemyPositio
 			}
 		}
 		else if(p.getAge() < 0 && p.getAge() != -1){
+			// Particle died
+			// Lets check distance to target and reset it
+			float distanceToTarget = glm::distance(enemyPosition, p.getPosition());
+			float enemyRadius = 2.0f;
+			// Float beautifier
+			std::cout << std::fixed             // fix the number of decimal digits
+					  << std::setprecision(2);  // to 2
+			std::cout << "Miss! You missed the target by " << std::setw(5) << distanceToTarget << " meters!" << std::endl;
 			// Reset the particle if its dead
 			p.setAge(-1);
 			p.setPosition(this->position);
